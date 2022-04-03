@@ -1,0 +1,3 @@
+[submodule "client"]
+	path = client
+	url = https://github.com/cedriccastro99/notes-pern-stack.git
