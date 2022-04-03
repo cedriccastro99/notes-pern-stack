@@ -18,7 +18,12 @@ module.exports = async(req,res,next) => {
         next();
 
     } catch (error) {
-        console.error(error.message);
-        return res.status(403).json("Not Authorized");
+        if(error.message === 'jwt expired'){
+            console.error(error.message);
+            return res.status(403).json("Session Expired");
+        }else{
+            console.error(error.message);
+            return res.status(403).json("Not Authorized");
+        }
     }
 }
