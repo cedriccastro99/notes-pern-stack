@@ -16,28 +16,27 @@ router.post('/register', validInfo ,async(req,res)=>{
         const users = await pool.query("SELECT * FROM users WHERE email = $1",[email]);
 
         if(users.rows.length !== 0){
-            return res.status(401).send("User already exist");
+            return res.status(401).json("User already exist");
+        }else{
+            //decrypt users password 
+
+            const saltRound = 10;
+            const salt = await bcrypt.genSalt(saltRound);
+
+            const bcryptPassword = await bcrypt.hash(password,salt);
+
+            //insert user into database
+
+            const newUser = await pool.query("INSERT INTO users(name,email,password) VALUES ($1,$2,$3) RETURNING *",[
+                name,email,bcryptPassword
+            ]);
+
+            //generate jwt token
+
+            const token = jwtGenerator(newUser.rows[0].id);
+
+            res.json({token});
         }
-
-        //decrypt users password 
-
-        const saltRound = 10;
-        const salt = await bcrypt.genSalt(saltRound);
-
-        const bcryptPassword = await bcrypt.hash(password,salt);
-
-        //insert user into database
-
-        const newUser = await pool.query("INSERT INTO users(name,email,password) VALUES ($1,$2,$3) RETURNING *",[
-            name,email,bcryptPassword
-        ]);
-
-        //generate jwt token
-
-        const token = jwtGenerator(newUser.rows[0].id);
-
-        res.json({token});
-
 
     } catch (error) {
         console.error(error.message);
